@@ -35,70 +35,47 @@ void inertialDebug()
   Brain.Screen.render();
 }
 
-int P(int currentPos, int target = 158, float kP = 0.5)
+int P(int currentPos, float kP = 0.5, int target = 158, int accuracy = 3)
 {
   int error = target - currentPos;
   int pow = error * kP;
   return pow;
 }
 
-void inertialTurn(int target, turnType turnDir, int speed, bool c)
+void inertialTurn(turnType turnDir = right, float deg = 90, int speed = 50)
 {
   if(turnDir == right)
   {
     leftMotors.spin(forward, speed, percentUnits::pct);
     rightMotors.spin(reverse, speed, percentUnits::pct);
-
-    if(c) while(inertialSensor.heading(degrees) <= target) wait(1, msec);
-    if(!c) while(inertialSensor.heading(degrees) >= target) wait(1, msec);
+    waitUntil((inertialSensor.heading(degrees) >= deg));
   }
-  else if(turnDir == left)
+  else
   {
     leftMotors.spin(reverse, speed, percentUnits::pct);
     rightMotors.spin(forward, speed, percentUnits::pct);
-
-    if(c) while(inertialSensor.heading(degrees) <= target) wait(1, msec);
-    if(!c) while(inertialSensor.heading(degrees) >= target) wait(1, msec);
+    waitUntil((inertialSensor.heading(degrees) <= deg));
   }
   
-  driveMotors.stop(brake);
+  leftMotors.stop();
+  rightMotors.stop();
 }
 
-//void t_inertialTurn(int target = 90, turnType turnDir = right, int speed = 50)
-
-void f_forward(int rots = 360, int speed = 50, int timeout = 0, bool wait = true)
+void visionTurn(vision::signature sig, float kP = 0.5, int accuracy = 3)
 {
-  driveMotors.setTimeout(timeout, msec);
-  driveMotors.spinFor(rots, deg, speed, velocityUnits::pct, wait);
-}
-
-void pInertialTurn(int target = 90, float kP = 0.5, int accuracy = 3)
-{
-  bool done = false;
-  while(!done)
-  {
-    int currentPos = inertialSensor.heading();
-    int speed = P(currentPos, target, kP);
-    rightMotors.setVelocity(speed, pct);
-    leftMotors.setVelocity(-speed, pct);
-    if(currentPos < target - accuracy || currentPos > target + accuracy) driveMotors.spin(fwd);
-    else done = true;
-    Task.sleep(1);
-  }
-  driveMotors.stop();
-}
-
-void pVisionTurn(vision::signature sig, float kP = 0.5, int accuracy = 3)
-{
+  LCD.clearScreen();
+  LCD.print("asdashhf;gmhlkdf");
+  LCD.render();
   const int minSize = 15;
 
   visionSensor.takeSnapshot(sig);
+
   vision::object obj = visionSensor.largestObject;
 
   if((!obj.exists) || (obj.width < minSize || obj.height < minSize))
   {
     LCD.clearScreen();
-    LCD.printAt(20, 20, "Object doesn't exist");
+    LCD.print("asdasdasdas");
     LCD.render();
   }
   else
@@ -106,65 +83,27 @@ void pVisionTurn(vision::signature sig, float kP = 0.5, int accuracy = 3)
     bool done = false;
     while(!done)
     {
-      int speed = P(obj.centerX, 158, kP);
+      int speed = P(obj.centerX, kP, 158, accuracy);
       rightMotors.setVelocity(speed, pct);
       leftMotors.setVelocity(-speed, pct);
 
       if(obj.centerX < 158 - accuracy || obj.centerX > 158 + accuracy)
       {
-        driveMotors.spin(fwd);
+        rightMotors.spin(fwd);
+        leftMotors.spin(fwd);
         LCD.clearScreen();
         LCD.printAt(20, 20, "Turning");
-        LCD.printAt(20, 60, "%d", obj.centerX);
         LCD.render();
       }
       else done = true;
-      visionSensor.takeSnapshot(sig);
-      obj = visionSensor.largestObject;
       Task.sleep(5);
     }
     LCD.clearScreen();
     LCD.printAt(20, 20, "Done");
     LCD.render();
-    driveMotors.stop();
-  }
-}
-
-void visionTurn(vision::signature sig, int accuracy = 3, int speed = 10)
-{
-  const int minSize = 10;
-
-  accuracy = abs(accuracy);
-
-  visionSensor.takeSnapshot(sig);
-  vision::object obj = visionSensor.largestObject;
-
-  if((!obj.exists) || (obj.width < minSize || obj.height < minSize))
-  {
-    LCD.clearScreen();
-    LCD.printAt(20, 20, "Object doesn't exist");
-    LCD.render();
-  }
-  else
-  {
-    bool done = false;
-    while(!done)
-    {
-      visionSensor.takeSnapshot(sig);
-      vision::object obj = visionSensor.largestObject;
-      if(obj.centerX < 158 - accuracy)
-      {
-        leftMotors.spin(reverse, speed, percentUnits::pct);
-        rightMotors.spin(forward, speed, percentUnits::pct);
-      }
-      else if(obj.centerX > 158 + accuracy)
-      {
-        leftMotors.spin(forward, speed, percentUnits::pct);
-        rightMotors.spin(reverse, speed, percentUnits::pct);
-      }
-      else done = true;
-    }
-    driveMotors.stop();
+    leftMotors.stop();
+    rightMotors.stop();
+    Task.sleep(10000);
   }
 }
 

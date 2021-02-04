@@ -2,5 +2,6 @@
 
 using namespace vex;
 
-bool team, side, skills, wTurn, errors;
-int funcs[12], deadbands[4], dType, tType;
+bool team, side, skills;
+
+int funcs[12];
