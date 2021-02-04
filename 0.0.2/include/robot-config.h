@@ -1,10 +1,5 @@
 using namespace vex;
 
-extern int threshold1;
-extern int threshold2;
-extern int threshold3;
-extern int threshold4;
-
 extern brain Brain;
 extern brain::lcd LCD;
 extern controller::lcd ControllerLCD;
@@ -19,13 +14,12 @@ extern motor frontLeftMotor;
 extern motor frontRightMotor;
 extern motor backLeftMotor;
 extern motor backRightMotor;
-extern motor backLiftMotor;
-extern motor frontLiftMotor;
+extern motor backMotor;
+extern motor frontMotor;
 
 extern motor_group leftMotors;
 extern motor_group rightMotors;
-extern motor_group driveMotors;
-extern motor_group liftMotors;
+extern motor_group rMotors;
 extern motor_group intakeMotors;
 
 extern inertial inertialSensor;
@@ -43,8 +37,6 @@ extern vision::signature SIG_6;
 extern vision::signature SIG_7;
 extern vision visionSensor;
 
-bool checkMotors();
-
-int error(std::string str, std::string str2, bool cond);
-
 void vexcodeInit(void);
+void autonomous(void);
+void drivercontrol(void);
